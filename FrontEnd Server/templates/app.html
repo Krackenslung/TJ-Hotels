@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TJ Hotels | App</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/ui.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles/app.css') }}">
+</head>
+
+<body class="app-body">
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar glass-card">
+    <div class="side-brand">
+      <img class="brand-logo-img small"
+           src="{{ url_for('static', filename='images/logo.png') }}"
+           alt="TJ Hotels"/>
+    </div>
+
+    <nav class="side-nav">
+      <button class="nav-item active" data-view="inicio">Inicio</button>
+      <button class="nav-item" data-view="hoteles">Hoteles</button>
+      <button class="nav-item" data-view="favoritos">Favoritos</button>
+
+      <div class="nav-sep"></div>
+
+      <button class="nav-item" data-view="zonas">Zonas</button>
+      <button class="nav-item" data-view="ofertas">Ofertas</button>
+      <button class="nav-item" data-view="soporte">Soporte</button>
+    </nav>
+
+    <div class="side-footer small text-muted">
+      Demo Frontend (estático) • JL
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="content">
+
+    <!-- Topbar -->
+    <header class="topbar glass-card">
+      <div class="search">
+        <span class="icon">🔎</span>
+        <input id="q" placeholder="Buscar hoteles..." />
+      </div>
+
+      <div class="userbox">
+        <span id="hello" class="text-muted">Hola, Usuario</span>
+        <button id="btnLogout" class="btn btn-light btn-sm">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- Filters -->
+    <section class="filters glass-card" id="filtersBar">
+      <div class="chip">
+        <span>💲</span>
+        <select id="price">
+          <option value="all">Mostrar precios</option>
+          <option value="0-100">$0 – $100</option>
+          <option value="100-200">$100 – $200</option>
+          <option value="200-999">$200+</option>
+        </select>
+      </div>
+
+      <div class="chip">
+        <span>⭐</span>
+        <select id="rating">
+          <option value="all">Rating</option>
+          <option value="4.5">4.5+</option>
+          <option value="4.0">4.0+</option>
+          <option value="3.5">3.5+</option>
+        </select>
+      </div>
+
+      <div class="chip">
+        <span>📍</span>
+        <select id="zone">
+          <option value="all">Zona</option>
+          <option value="Zona Río">Zona Río</option>
+          <option value="Centro">Centro</option>
+          <option value="Otay">Otay</option>
+          <option value="Playas">Playas</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- Views -->
+    <section class="views">
+
+      <!-- ================= INICIO ================= -->
+      <section class="view active" id="view-inicio">
+
+        <!-- HERO -->
+        <div class="glass-card p-0 overflow-hidden">
+          <div class="hero">
+            <img class="hero-img"
+                 src="{{ url_for('static', filename='images/banner-tj-hotels.png') }}"
+                 alt="TJ Hotels banner" />
+
+            <div class="hero-overlay">
+              <div class="hero-title">Tu siguiente stay en Tijuana</div>
+              <div class="hero-sub">
+                Explora hoteles por zona, rating y servicios.
+                Cuando elijas uno, te mandamos al sitio oficial para reservar.
+              </div>
+
+              <div class="hero-ctas">
+                <button class="btn btn-primary btn-sm" id="btnGoHotels">Explorar hoteles</button>
+                <button class="btn btn-light btn-sm" id="btnGoOffers">Ver ofertas</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DESTACADOS (en glass-card) -->
+        <div class="row g-3 mt-3">
+          <div class="col-12">
+            <div class="glass-card p-3">
+
+              <!-- ================= FEATURED SECTION ================= -->
+              <div class="featured-section mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="featured-title">Hoteles Destacados</div>
+                </div>
+
+                <div class="featured-carousel">
+                  <div class="carousel-track">
+
+                    <!-- ===== GRUPO 1 (ORIGINALES) ===== -->
+                    <div class="track-group">
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hotel-lucerna.png') }}" alt="Hotel Lucerna" />
+                        <div class="mini-caption">Hotel Lucerna</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hyatt-place.png') }}" alt="Hyatt Place" />
+                        <div class="mini-caption">Hyatt Place</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/grand-one-plaza.png') }}" alt="Grand Hotel" />
+                        <div class="mini-caption">Grand Hotel</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/holiday-inn.png') }}" alt="Holiday Inn" />
+                        <div class="mini-caption">Holiday Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/fiesta-inn.png') }}" alt="Fiesta Inn" />
+                        <div class="mini-caption">Fiesta Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hotel-frontiere.png') }}" alt="Hotel Frontiere" />
+                        <div class="mini-caption">Hotel Frontiere</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/quartz-hotel-spa.png') }}" alt="Quartz Hotel &amp; Spa" />
+                        <div class="mini-caption">Quartz Hotel &amp; Spa</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/sleep-in.png') }}" alt="Sleep Inn" />
+                        <div class="mini-caption">Sleep Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/tj-border-suites.png') }}" alt="TJ Border Suites" />
+                        <div class="mini-caption">TJ Border Suites</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/k-tower.png') }}" alt="K-Tower" />
+                        <div class="mini-caption">K-Tower</div>
+                      </div>
+                    </div>
+
+                    <!-- ===== GRUPO 2 (DUPLICADO EXACTO PARA LOOP) ===== -->
+                    <div class="track-group" aria-hidden="true">
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hotel-lucerna.png') }}" alt="Hotel Lucerna" />
+                        <div class="mini-caption">Hotel Lucerna</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hyatt-place.png') }}" alt="Hyatt Place" />
+                        <div class="mini-caption">Hyatt Place</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/grand-one-plaza.png') }}" alt="Grand Hotel" />
+                        <div class="mini-caption">Grand Hotel</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/holiday-inn.png') }}" alt="Holiday Inn" />
+                        <div class="mini-caption">Holiday Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/fiesta-inn.png') }}" alt="Fiesta Inn" />
+                        <div class="mini-caption">Fiesta Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/hotel-frontiere.png') }}" alt="Hotel Frontiere" />
+                        <div class="mini-caption">Hotel Frontiere</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/quartz-hotel-spa.png') }}" alt="Quartz Hotel &amp; Spa" />
+                        <div class="mini-caption">Quartz Hotel &amp; Spa</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/sleep-in.png') }}" alt="Sleep Inn" />
+                        <div class="mini-caption">Sleep Inn</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/tj-border-suites.png') }}" alt="TJ Border Suites" />
+                        <div class="mini-caption">TJ Border Suites</div>
+                      </div>
+
+                      <div class="mini-card">
+                        <img src="{{ url_for('static', filename='images/k-tower.png') }}" alt="K-Tower" />
+                        <div class="mini-caption">K-Tower</div>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <div class="text-muted small mt-2">
+                  (Demo) Imágenes locales para mockup.
+                </div>
+              </div>
+              <!-- ================= /FEATURED SECTION ================= -->
+
+            </div>
+          </div>
+        </div>
+
+        <!-- REVIEWS (en su propio glass-card para que se vea premium igual) -->
+        <div class="glass-card p-3 mt-3">
+          <!-- ================= REVIEWS STRIP (OPUESTO) ================= -->
+          <div class="reviews-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div class="reviews-title">Opiniones recientes</div>
+              <div class="text-muted small">(Demo) Reseñas simuladas</div>
+            </div>
+
+            <div class="reviews-carousel">
+              <div class="reviews-track">
+
+                <!-- GRUPO 1 -->
+                <div class="reviews-group">
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Mariana</div>
+                      <div class="review-text">“Muy limpio, excelente ubicación. Volvería sin pensarlo.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/man-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Carlos</div>
+                      <div class="review-text">“Check-in rápido y cama cómoda. Buen precio por noche.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Sofía</div>
+                      <div class="review-text">“La zona se siente segura y todo estuvo súper tranquilo.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/man-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Iván</div>
+                      <div class="review-text">“Perfecto para trabajo, buena señal y buena atención.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Paola</div>
+                      <div class="review-text">“El diseño del lugar está muy nice, se siente premium.”</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- GRUPO 2 (duplicado para loop perfecto) -->
+                <div class="reviews-group" aria-hidden="true">
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Mariana</div>
+                      <div class="review-text">“Muy limpio, excelente ubicación. Volvería sin pensarlo.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/man-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Carlos</div>
+                      <div class="review-text">“Check-in rápido y cama cómoda. Buen precio por noche.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Sofía</div>
+                      <div class="review-text">“La zona se siente segura y todo estuvo súper tranquilo.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/man-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Iván</div>
+                      <div class="review-text">“Perfecto para trabajo, buena señal y buena atención.”</div>
+                    </div>
+                  </div>
+
+                  <div class="review-card">
+                    <img class="review-avatar" src="{{ url_for('static', filename='images/woman-user-circle-icon.webp') }}" alt="User" />
+                    <div class="review-meta">
+                      <div class="review-name">Paola</div>
+                      <div class="review-text">“El diseño del lugar está muy nice, se siente premium.”</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+          <!-- ================= /REVIEWS STRIP ================= -->
+        </div>
+
+      </section>
+
+      <!-- ================= HOTELES / FAVORITOS ================= -->
+<section class="view" id="view-grid">
+  <section class="grid">
+
+    <div class="list glass-card">
+      <div class="list-head">
+        <div>
+          <div class="fw-semibold" id="listTitle">Hoteles</div>
+          <div class="text-muted small" id="count"></div>
+        </div>
+
+        <!-- Controles SOLO para Hoteles (Places) -->
+        <div class="list-actions" id="hotelsActions" style="display:none;">
+          <select id="radiusSel" class="form-select form-select-sm">
+            <option value="1000">1 km</option>
+            <option value="2000">2 km</option>
+            <option value="5000" selected>5 km</option>
+            <option value="10000">10 km</option>
+          </select>
+
+          <button id="btnRefreshHotels" class="btn btn-outline-primary btn-sm" type="button">
+            ⟳ Recargar
+          </button>
+        </div>
+      </div>
+
+      <div id="cards" class="cards"></div>
+    </div>
+
+    <div class="map glass-card">
+      <div class="map-head">
+        <div class="fw-semibold">Mapa</div>
+      </div>
+
+      <div id="map" class="map-canvas">
+        <!-- botón flotante -->
+        <button id="btnRecenter" class="map-fab" type="button" title="Volver a mi ubicación">
+          ⌖
+        </button>
+
+        <div class="map-placeholder">
+          Mapa (Demo)
+        </div>
+      </div>
+    </div>
+
+  </section>
+</section>
+
+<!-- ================= ZONAS ================= -->
+<section class="view" id="view-zonas">
+  <div class="glass-card p-3">
+    <h5 class="mb-1">Zonas</h5>
+    <div class="text-muted small">Próximamente: ver zonas y puntos de interés.</div>
+  </div>
+</section>
+
+<!-- ================= OFERTAS ================= -->
+<section class="view" id="view-ofertas">
+  <div class="glass-card p-3">
+    <h5 class="mb-1">Ofertas</h5>
+    <div class="text-muted small">Próximamente: ofertas destacadas y promociones.</div>
+  </div>
+</section>
+
+<!-- ================= SOPORTE ================= -->
+<section class="view" id="view-soporte">
+  <div class="glass-card p-3">
+    <h5 class="mb-1">Soporte</h5>
+    <div class="text-muted small">Próximamente: FAQ y contacto.</div>
+  </div>
+</section>
+              <!-- botón flotante -->
+              <button id="btnRecenter" class="map-fab" type="button" title="Volver a mi ubicación">
+                ⌖
+              </button>
+
+              <div class="map-placeholder">
+                Mapa (Demo)
+              </div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+    </section>
+  </main>
+</div>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/maps-loader.js') }}"></script>
+<script src="{{ url_for('static', filename='js/maps-hotels.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
