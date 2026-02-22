@@ -1,5 +1,5 @@
-// ================= TJ HOTELS — app.js (alineado con tu app.html actual) =================
 console.log("app.js cargó ✅");
+const API_KEY = "AIzaSyD6qRAcdy-4LRhsUwXp2ADVs_f9wnqHhCk"; 
 const dummyHotels = [
   {
     id: 1,
@@ -24,8 +24,6 @@ const dummyHotels = [
     services: ["wifi", "pool", "parking"],
     address: "Blvd. Agua Caliente 10515",
     emoji: "🛁",
-    // OJO: en tu app.html sí usas quartz-hotel-spa.png, pero aquí traías spa.png
-    // Para evitar “imagen rota” en el modal, lo alineo con tus assets del carrusel:
     image: "/static/images/quartz-hotel-spa.png",
     website: "https://www.quartzhotel.mx/",
   },
@@ -65,7 +63,6 @@ const dummyHotels = [
     services: ["wifi", "gym"],
     address: "Blvd. Sánchez Taboada",
     emoji: "🌊",
-    // si no existe este asset en /static/images, ponlo igual a otro que sí tengas
     image: "/static/images/alberca-indoor.png",
     website: "https://www.hotelrealdelrio.com/",
   },
@@ -75,6 +72,8 @@ const $ = (id) => document.getElementById(id);
 
 let currentView = "inicio";
 let hotelsMapLoaded = false;
+let featuredLoaded = false;
+let reviewsLoaded = false;
 
 function getFavs() {
   return new Set(JSON.parse(localStorage.getItem("tj_favs") || "[]"));
@@ -83,11 +82,60 @@ function setFavs(set) {
   localStorage.setItem("tj_favs", JSON.stringify([...set]));
 }
 
+async function initFeaturedIfPossible() {
+  if (featuredLoaded) return;
+
+  const hasDOM =
+    document.getElementById("featuredGroup") &&
+    document.getElementById("featuredGroupClone") &&
+    document.getElementById("featuredTrack") &&
+    document.getElementById("featuredNote");
+  if (!hasDOM) return;
+  if (!window.FeaturedPlaces || typeof window.FeaturedPlaces.loadAndRender !== "function") {
+    console.warn(
+      "FeaturedPlaces no está disponible o no tiene loadAndRender(). " +
+      "¿Cargaste featured-places.js antes de app.js?"
+    );
+    return;
+  }
+  featuredLoaded = true;
+  try {
+    await window.FeaturedPlaces.loadAndRender(API_KEY);
+    console.log("FeaturedPlaces cargó ✅");
+    await initReviewsIfPossible();
+  } catch (err) {
+    console.error("FeaturedPlaces falló:", err);
+    featuredLoaded = false;
+  }
+}
+async function initReviewsIfPossible() {
+  if (reviewsLoaded) return;
+  const hasDOM =
+    document.getElementById("reviewsGroup") &&
+    document.getElementById("reviewsGroupClone") &&
+    document.getElementById("reviewsTrack") &&
+    document.getElementById("reviewsNote");
+  if (!hasDOM) return;
+  if (!window.FeaturedPlaces || typeof window.FeaturedPlaces.loadAndRenderReviewsFromFeatured !== "function") {
+    console.warn("No existe FeaturedPlaces.loadAndRenderReviewsFromFeatured(). Revisa featured-places.js");
+    return;
+  }
+  reviewsLoaded = true;
+  try {
+    await window.FeaturedPlaces.loadAndRenderReviewsFromFeatured(API_KEY, {
+      maxHotels: 6,
+      maxCards: 10 
+    });
+    console.log("Reviews reales cargadas ✅");
+  } catch (err) {
+    console.error("Reviews reales fallaron:", err);
+    reviewsLoaded = false; 
+  }
+}
+
 /* ================= Views ================= */
 
 function hideAllViews() {
-  // Tu app.html SOLO tiene view-inicio y view-grid.
-  // Aun así, dejo los otros ids, pero con guardas (no rompe si no existen).
   ["view-inicio", "view-grid", "view-zonas", "view-ofertas", "view-soporte"].forEach((id) => {
     const el = $(id);
     if (el) el.classList.remove("active");
@@ -97,20 +145,17 @@ function hideAllViews() {
 function setActiveView(view) {
   currentView = view;
 
-  // nav active
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
   document
     .querySelectorAll(`.nav-item[data-view="${view}"]`)
     .forEach((b) => b.classList.add("active"));
 
-  // Mostrar/ocultar filtros y acciones
   const filtersBar = $("filtersBar");
   const actions = $("hotelsActions");
 
   const showFilters = ["hoteles", "favoritos"].includes(view);
   if (filtersBar) filtersBar.style.display = showFilters ? "" : "none";
 
-  // hotelsActions SOLO en hoteles
   if (actions) actions.style.display = view === "hoteles" ? "" : "none";
 
   hideAllViews();
@@ -118,6 +163,7 @@ function setActiveView(view) {
   // Inicio
   if (view === "inicio") {
     $("view-inicio")?.classList.add("active");
+    initFeaturedIfPossible();
     return;
   }
 
@@ -130,20 +176,18 @@ function setActiveView(view) {
 
     // ---- HOTELES (Places) ----
     if (view === "hoteles") {
-      const API_KEY = "AIzaSyD6qRAcdy-4LRhsUwXp2ADVs_f9wnqHhCk"; // tu key
 
       if (!hotelsMapLoaded) {
         hotelsMapLoaded = true;
 
+        
         HotelsMap.loadAndRender(API_KEY).catch((err) => {
           console.error(err);
-          hotelsMapLoaded = false; // permite reintentar
+          hotelsMapLoaded = false;
           if (actions) actions.style.display = "none";
-          // fallback dummy (si Places falla)
           applyFilters();
         });
       } else {
-        // Ya cargado: re-aplica filtros UI sobre Places (si existe)
         HotelsMap.applyClientFilters?.();
       }
       return;
@@ -244,14 +288,6 @@ function applyFilters() {
   render(list);
 }
 
-/* ================= Session ================= */
-function ensureSession() {
-  const user = JSON.parse(sessionStorage.getItem("tj_user") || "null");
-  if (!user) window.location.href = "/";
-
-  const hello = $("hello");
-  if (hello) hello.textContent = `Hola, ${user.name || "Usuario"}`;
-}
 
 /* ================= Events ================= */
 document.addEventListener("input", (e) => {
@@ -304,9 +340,7 @@ document.addEventListener("click", (e) => {
     const mTitle = $("mTitle");
     const mBody = $("mBody");
 
-    // Si NO pegaste el modal aún, no tronamos:
     if (!modalEl || !mTitle || !mBody || typeof bootstrap === "undefined") {
-      // fallback: abrir sitio oficial directo
       window.open(h.website, "_blank", "noopener");
       return;
     }
@@ -350,5 +384,10 @@ document.addEventListener("click", (e) => {
   }
 });
 
-ensureSession();
+/* ================= Boot ================= */
 setActiveView("inicio");
+
+// Por si el HTML tarda en pintar (carrusel), intentamos al cargar DOM:
+document.addEventListener("DOMContentLoaded", () => {
+  if (currentView === "inicio") initFeaturedIfPossible();
+});

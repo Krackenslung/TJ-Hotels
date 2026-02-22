@@ -156,15 +156,84 @@ window.HotelsMap = (function () {
       });
 
       m.addListener("click", () => {
-        infoWindow.setContent(`
-          <div style="max-width:240px">
-            <div style="font-weight:700">${p.name ?? "Hotel"}</div>
-            <div style="font-size:12px;opacity:.75">${p.vicinity ?? ""}</div>
-            <div style="margin-top:6px;font-size:12px">⭐ ${p.rating ?? "—"} (${p.user_ratings_total ?? 0})</div>
-          </div>
-        `);
-        infoWindow.open(map, m);
-      });
+  const service = new google.maps.places.PlacesService(map);
+
+  service.getDetails(
+    {
+      placeId: p.place_id,
+      fields: ["name", "rating", "user_ratings_total", "website", "photos", "vicinity"]
+    },
+    (place, status) => {
+
+      const name = place?.name || "Hotel";
+      const rating = place?.rating ?? "—";
+      const total = place?.user_ratings_total ?? 0;
+      const vicinity = place?.vicinity ?? "";
+      const website = place?.website || null;
+
+      const photoUrl = place?.photos?.length
+        ? place.photos[0].getUrl({ maxWidth: 400 })
+        : "https://via.placeholder.com/400x300?text=Hotel";
+
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name)}&query_place_id=${encodeURIComponent(p.place_id)}`;
+
+      infoWindow.setContent(`
+  <div class="card" style="width: 18rem; max-width: 300px; border-radius:12px; overflow:hidden;">
+    
+    
+    <img src="${photoUrl}" 
+         alt="${name}" 
+         style="width:100%; height:160px; object-fit:cover; display:block;">
+
+    <div class="card-body p-3">
+
+    <span class="fav-icon" data-pid="${p.place_id}" style="cursor:pointer; user-select:none;">
+  <i class="bi bi-heart text-secondary" style="font-size:1.5rem;"></i>
+</span>
+
+
+      <h6 class="card-title mb-1" 
+          style="font-weight:700; font-size:1rem;">
+        ${name}
+      </h6>
+
+      <p class="mb-2" 
+         style="font-size:12px; color:#6c757d; line-height:1.3;">
+        ${vicinity}
+      </p>
+
+      <p class="mb-3" style="font-size:13px;">
+        ⭐ ${rating} 
+        <small class="text-muted">(${total})</small>
+      </p>
+
+      <div class="d-flex gap-2">
+        <a 
+          ${website 
+            ? `href="${website}" target="_blank" rel="noopener noreferrer"` 
+            : `href="#" onclick="return false;"`}
+          class="btn btn-primary btn-sm flex-fill">
+          Website
+        </a>
+
+        <a href="${mapsUrl}" 
+           target="_blank" 
+           rel="noopener noreferrer" 
+           class="btn btn-outline-secondary btn-sm flex-fill">
+          Maps
+        </a>
+      </div>
+
+    </div>
+  </div>
+`);
+
+
+      infoWindow.open(map, m);
+    }
+  );
+});
+
 
       placeMarkers.push(m);
     });
