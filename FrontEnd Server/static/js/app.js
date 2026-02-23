@@ -1,5 +1,7 @@
 console.log("app.js cargó ✅");
-const API_KEY = "AIzaSyD6qRAcdy-4LRhsUwXp2ADVs_f9wnqHhCk"; 
+const API_KEY = "AIzaSyD6qRAcdy-4LRhsUwXp2ADVs_f9wnqHhCk";
+
+// Dummy list only used for Favoritos view (Places se usa en Hoteles)
 const dummyHotels = [
   {
     id: 1,
@@ -82,59 +84,70 @@ function setFavs(set) {
   localStorage.setItem("tj_favs", JSON.stringify([...set]));
 }
 
+// ================= Featured (Inicio) =================
 async function initFeaturedIfPossible() {
   if (featuredLoaded) return;
 
+  // ✅ Tu HTML NO tiene featuredNote, así que no lo pedimos
   const hasDOM =
     document.getElementById("featuredGroup") &&
     document.getElementById("featuredGroupClone") &&
-    document.getElementById("featuredTrack") &&
-    document.getElementById("featuredNote");
+    document.getElementById("featuredTrack");
   if (!hasDOM) return;
+
   if (!window.FeaturedPlaces || typeof window.FeaturedPlaces.loadAndRender !== "function") {
     console.warn(
       "FeaturedPlaces no está disponible o no tiene loadAndRender(). " +
-      "¿Cargaste featured-places.js antes de app.js?"
+        "¿Cargaste featured-places.js antes de app.js?"
     );
     return;
   }
+
   featuredLoaded = true;
   try {
     await window.FeaturedPlaces.loadAndRender(API_KEY);
     console.log("FeaturedPlaces cargó ✅");
+
+    // Después de cargar featured, intentamos reviews reales
     await initReviewsIfPossible();
   } catch (err) {
     console.error("FeaturedPlaces falló:", err);
     featuredLoaded = false;
   }
 }
+
 async function initReviewsIfPossible() {
   if (reviewsLoaded) return;
+
   const hasDOM =
     document.getElementById("reviewsGroup") &&
     document.getElementById("reviewsGroupClone") &&
     document.getElementById("reviewsTrack") &&
     document.getElementById("reviewsNote");
   if (!hasDOM) return;
-  if (!window.FeaturedPlaces || typeof window.FeaturedPlaces.loadAndRenderReviewsFromFeatured !== "function") {
+
+  if (
+    !window.FeaturedPlaces ||
+    typeof window.FeaturedPlaces.loadAndRenderReviewsFromFeatured !== "function"
+  ) {
     console.warn("No existe FeaturedPlaces.loadAndRenderReviewsFromFeatured(). Revisa featured-places.js");
     return;
   }
+
   reviewsLoaded = true;
   try {
     await window.FeaturedPlaces.loadAndRenderReviewsFromFeatured(API_KEY, {
       maxHotels: 6,
-      maxCards: 10 
+      maxCards: 10,
     });
     console.log("Reviews reales cargadas ✅");
   } catch (err) {
     console.error("Reviews reales fallaron:", err);
-    reviewsLoaded = false; 
+    reviewsLoaded = false;
   }
 }
 
 /* ================= Views ================= */
-
 function hideAllViews() {
   ["view-inicio", "view-grid", "view-zonas", "view-ofertas", "view-soporte"].forEach((id) => {
     const el = $(id);
@@ -146,9 +159,7 @@ function setActiveView(view) {
   currentView = view;
 
   document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
-  document
-    .querySelectorAll(`.nav-item[data-view="${view}"]`)
-    .forEach((b) => b.classList.add("active"));
+  document.querySelectorAll(`.nav-item[data-view="${view}"]`).forEach((b) => b.classList.add("active"));
 
   const filtersBar = $("filtersBar");
   const actions = $("hotelsActions");
@@ -176,11 +187,9 @@ function setActiveView(view) {
 
     // ---- HOTELES (Places) ----
     if (view === "hoteles") {
-
       if (!hotelsMapLoaded) {
         hotelsMapLoaded = true;
 
-        
         HotelsMap.loadAndRender(API_KEY).catch((err) => {
           console.error(err);
           hotelsMapLoaded = false;
@@ -203,7 +212,8 @@ function setActiveView(view) {
   if (view === "ofertas") $("view-ofertas")?.classList.add("active");
   if (view === "soporte") $("view-soporte")?.classList.add("active");
 }
-/* ================= Render cards ================= */
+
+/* ================= Render cards (solo Favoritos) ================= */
 function render(list) {
   const favs = getFavs();
 
@@ -267,7 +277,6 @@ function applyFilters() {
   const zone = $("zone")?.value || "all";
   const rating = $("rating")?.value || "all";
   const price = $("price")?.value || "all";
-
   const service = $("service") ? $("service").value : "all";
 
   let list = getFilteredListBase().filter((h) => {
@@ -288,13 +297,19 @@ function applyFilters() {
   render(list);
 }
 
-
 /* ================= Events ================= */
 document.addEventListener("input", (e) => {
   if (["q", "zone", "rating", "price", "service"].includes(e.target?.id)) applyFilters();
 });
 
 document.addEventListener("click", (e) => {
+
+  // Login -> ir a página de login
+  if (e.target?.id === "btnLogin") {
+    window.location.href = "/login";
+    return;
+  }
+
   // Logout
   if (e.target?.id === "btnLogout") {
     sessionStorage.clear();
@@ -307,8 +322,13 @@ document.addEventListener("click", (e) => {
     setActiveView("hoteles");
     return;
   }
-  if (e.target?.id === "btnGoOffers") {
-    setActiveView("ofertas");
+
+
+
+  // ✅ Botón (nuevo) para ir a Favoritos desde Hoteles
+  if (e.target?.id === "btnGoFavs") {
+    setActiveView("favoritos");
+    applyFilters();
     return;
   }
 
@@ -320,7 +340,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // Quick zones (si luego agregas botones con data-zonequick)
+  // Quick zones
   const zoneQuick = e.target?.getAttribute?.("data-zonequick");
   if (zoneQuick) {
     const zoneSel = $("zone");
@@ -330,7 +350,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // Open modal (solo si existe el modal en tu HTML)
+  // Open modal (solo favoritos dummy)
   const openId = e.target?.getAttribute?.("data-open");
   if (openId) {
     const h = dummyHotels.find((x) => x.id === Number(openId));
@@ -372,7 +392,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // Toggle favorite
+  // Toggle favorite (solo favoritos dummy)
   const favId = e.target?.getAttribute?.("data-fav");
   if (favId) {
     const id = Number(favId);
