@@ -37,6 +37,9 @@ document.addEventListener("click", (e) => {
         return;
       }
 
+      // ✅ AQUÍ: Guardar sesión del usuario
+      sessionStorage.setItem("tj_user", JSON.stringify(result.data.user));
+
       Swal.fire({
         icon: "success",
         title: "Login successful",

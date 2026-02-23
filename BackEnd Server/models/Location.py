@@ -135,6 +135,38 @@ class Location:
     @staticmethod
     def get_all_json():
         return json.dumps([json.loads(u.to_json()) for u in Location.get_all()])
+    
+    # Get all Locations by user id
+    @staticmethod
+    def get_by_user_id(user_id):
+        try:
+            with SQLServerConnection.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT id, name, description, address, lat, lng, userId, status
+                    FROM Locations
+                    WHERE userId = ?
+                """, user_id)
+
+                rows = cursor.fetchall()
+
+                locations = []
+                for row in rows:
+                    loc = {
+                        "id": row[0],
+                        "name": row[1],
+                        "description": row[2],
+                        "address": row[3],
+                        "lat": row[4],
+                        "lng": row[5],
+                        "userId": row[6],
+                        "status": row[7],
+                    }
+                    locations.append(loc)
+
+                return locations
+        except Exception as e:
+            raise e
 
     
     # Add location

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, make_response
 import json
 from models.User import User, RecordNotFoundError
+from models.Location import Location
 from security.auth import generate_token, require_auth
 
 # Export to server
@@ -26,10 +27,15 @@ def get_users():
 @require_auth
 def get_user_by_id(user_id):
     try:
-        u = User([user_id])
+        u = User([user_id])  # loads user
+        locations = Location.get_by_user_id(user_id)
+
         return jsonify({
             "status": 0,
-            "data": json.loads(u.to_json())
+            "data": {
+                "user": json.loads(u.to_json()),
+                "locations": locations
+            }
         })
     except RecordNotFoundError as e:
         return jsonify({
@@ -40,7 +46,7 @@ def get_user_by_id(user_id):
         return jsonify({
             "status": 1,
             "errorMessage": str(e)
-        })
+        }), 500
 
 # ===== Post /users =====
 @user_bp.route('/users', methods=['POST'])

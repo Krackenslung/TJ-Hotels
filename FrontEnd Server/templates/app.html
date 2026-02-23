@@ -25,25 +25,21 @@
 
     <nav class="side-nav">
       <button class="nav-item active" data-view="inicio">
-        <i class="bi bi-house-door-fill"></i>
-        Inicio
+        <i class="bi bi-house-door-fill"></i> Inicio
       </button>
 
       <button class="nav-item" data-view="hoteles">
-        <i class="bi bi-building"></i>
-        Hoteles
+        <i class="bi bi-building"></i> Hoteles
       </button>
 
       <button class="nav-item" data-view="favoritos">
-        <i class="bi bi-heart"></i>
-        Favoritos
+        <i class="bi bi-heart"></i> Favoritos
       </button>
 
       <div class="nav-sep"></div>
 
       <button class="nav-item" data-view="soporte">
-        <i class="bi bi-gear"></i>
-        Soporte
+        <i class="bi bi-gear"></i> Soporte
       </button>
     </nav>
   </aside>
@@ -59,7 +55,7 @@
       </div>
 
       <div class="userbox">
-        <span id="hello" class="text-muted">Hola</span>
+        <button id="btnRegister" class="btn btn-light btn-sm">Register</button>
         <button id="btnLogin" class="btn btn-light btn-sm">Iniciar sesión</button>
       </div>
     </header>
@@ -101,10 +97,9 @@
     <!-- Views -->
     <section class="views">
 
-      <!-- ================= INICIO ================= -->
+      <!-- INICIO -->
       <section class="view active" id="view-inicio">
 
-        <!-- HERO -->
         <div class="glass-card p-0 overflow-hidden">
           <div class="hero">
             <img class="hero-img"
@@ -119,58 +114,41 @@
               </div>
 
               <div class="hero-ctas">
-                <button class="btn btn-primary btn-sm" id="btnGoHotels">Explorar hoteles</button>
-                <button class="btn btn-light btn-sm" id="btnGoOffers">Ver ofertas</button>
+                <button class="btn btn-primary btn-sm" id="btnGoHotels">
+                  Explorar hoteles
+                </button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- DESTACADOS -->
-        <div class="row g-3 mt-3">
-          <div class="col-12">
-            <div class="glass-card p-3">
-
-              <div class="featured-section mt-2">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <div class="featured-title">Hoteles Destacados</div>
-                </div>
-
-                <div class="featured-carousel">
-                  <div class="carousel-track" id="featuredTrack">
-                    <div class="track-group" id="featuredGroup"></div>
-                    <div class="track-group" id="featuredGroupClone" aria-hidden="true"></div>
-                  </div>
-                </div>
-              </div>
-
+        <div class="glass-card p-3 mt-3">
+          <div class="featured-title mb-3">Hoteles Destacados</div>
+          <div class="featured-carousel">
+            <div class="carousel-track" id="featuredTrack">
+              <div class="track-group" id="featuredGroup"></div>
+              <div class="track-group" id="featuredGroupClone"></div>
             </div>
           </div>
         </div>
 
         <!-- REVIEWS -->
         <div class="glass-card p-3 mt-3">
-          <div class="reviews-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <div class="reviews-title">Opiniones recientes</div>
-              <div class="text-muted small" id="reviewsNote">Cargando reseñas reales...</div>
-            </div>
-
-            <div class="reviews-carousel">
-              <div class="reviews-track" id="reviewsTrack">
-                <div class="reviews-group" id="reviewsGroup"></div>
-                <div class="reviews-group" id="reviewsGroupClone" aria-hidden="true"></div> 
-              </div>
+          <div class="reviews-title mb-3">Opiniones recientes</div>
+          <div class="reviews-carousel">
+            <div class="reviews-track" id="reviewsTrack">
+              <div class="reviews-group" id="reviewsGroup"></div>
+              <div class="reviews-group" id="reviewsGroupClone"></div>
             </div>
           </div>
         </div>
 
       </section>
 
-      <!-- ================= HOTELES / FAVORITOS ================= -->
+      <!-- GRID (Hoteles / Favoritos) -->
       <section class="view" id="view-grid">
         <section class="grid">
-
           <div class="list glass-card">
             <div class="list-head">
               <div>
@@ -178,7 +156,6 @@
                 <div class="text-muted small" id="count"></div>
               </div>
 
-              <!-- Controles SOLO para Hoteles (Places) -->
               <div class="list-actions" id="hotelsActions" style="display:none;">
                 <select id="radiusSel" class="form-select form-select-sm">
                   <option value="1000">1 km</option>
@@ -186,10 +163,13 @@
                   <option value="5000" selected>5 km</option>
                   <option value="10000">10 km</option>
                   <option value="20000">20 km</option>
-
                 </select>
 
-                <button id="btnRefreshHotels" class="btn btn-outline-primary btn-sm" type="button">
+                <button class="btn btn-outline-primary btn-sm" id="btnGoFavs">
+                  ★ Favoritos
+                </button>
+
+                <button id="btnRefreshHotels" class="btn btn-outline-primary btn-sm">
                   ⟳ Recargar
                 </button>
               </div>
@@ -204,29 +184,64 @@
             </div>
 
             <div id="map" class="map-canvas">
-              <!-- botón flotante -->
-              <button id="btnRecenter" class="map-fab" type="button" title="Volver a mi ubicación">
-                ⌖
-              </button>
+              <button id="btnRecenter" class="map-fab">⌖</button>
             </div>
           </div>
-
         </section>
       </section>
 
-    <!-- ================= SOPORTE ================= -->
-    <section class="view" id="view-soporte">
-      <div class="glass-card p-3">
-        <h5 class="mb-1">Soporte</h5>
-        <div class="text-muted small">Próximamente: FAQ y contacto.</div>
-      </div>
+      <!-- SOPORTE -->
+      <section class="view" id="view-soporte">
+        <div class="glass-card p-3 support-wrap">
+          <h5>Soporte</h5>
+          <div class="text-muted small mb-3">
+            Preguntas frecuentes y contacto rápido.
+          </div>
+
+          <div class="accordion accordion-flush mb-4" id="supportFaq">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#faq1">
+                  ¿Cómo funcionan las reservas?
+                </button>
+              </h2>
+              <div id="faq1" class="accordion-collapse collapse"
+                   data-bs-parent="#supportFaq">
+                <div class="accordion-body">
+                  Te redirigimos al sitio oficial del hotel para completar tu reserva.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form id="supportForm">
+            <div class="mb-2">
+              <input class="form-control" placeholder="Nombre">
+            </div>
+            <div class="mb-2">
+              <input class="form-control" placeholder="Email">
+            </div>
+            <div class="mb-2">
+              <textarea class="form-control" rows="3"
+                        placeholder="Mensaje"></textarea>
+            </div>
+            <button class="btn btn-primary btn-sm">Enviar</button>
+          </form>
+        </div>
+      </section>
+
     </section>
   </main>
 </div>
-<!-- Bootstrap JS -->
+
+<!-- Bootstrap -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/js/maps-hotels.js."></script>
-<script src="/static/js/maps-loader.js."></script>
+
+<!-- Scripts -->
+<script src="/static/js/maps-loader.js"></script>
+<script src="/static/js/maps-hotels.js"></script>
 <script src="/static/js/featured-places.js"></script>
 <script src="/static/js/app.js"></script>
 
