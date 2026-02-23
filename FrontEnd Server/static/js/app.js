@@ -407,7 +407,119 @@ document.addEventListener("click", (e) => {
 /* ================= Boot ================= */
 setActiveView("inicio");
 
-// Por si el HTML tarda en pintar (carrusel), intentamos al cargar DOM:
 document.addEventListener("DOMContentLoaded", () => {
   if (currentView === "inicio") initFeaturedIfPossible();
+  bindSupportEventsIfPossible(); // también intentamos bindear soporte al cargar
 });
+
+
+/* ================= Soporte (Frontend only) ================= */
+let supportBound = false;
+
+function showSupportToast(message) {
+  const toastEl = document.getElementById("supportToast");
+  const bodyEl = document.getElementById("supportToastBody");
+  if (bodyEl) bodyEl.textContent = message;
+
+  if (!toastEl || typeof bootstrap === "undefined") {
+    alert(message);
+    return;
+  }
+
+  const t = bootstrap.Toast.getOrCreateInstance(toastEl, { delay: 2200 });
+  t.show();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
+}
+
+function bindSupportEventsIfPossible() {
+  if (supportBound) return;
+
+  const form = document.getElementById("supportForm");
+  const btnClear = document.getElementById("btnSupportClear");
+  const btnEmail = document.getElementById("btnSupportEmail");
+
+  if (!form || !btnClear || !btnEmail) return;
+
+  supportBound = true;
+
+  const $name = document.getElementById("supportName");
+  const $email = document.getElementById("supportEmail");
+  const $topic = document.getElementById("supportTopic");
+  const $msg = document.getElementById("supportMsg");
+  const $hint = document.getElementById("supportHint");
+
+  const SUPPORT_EMAIL = "soporte@tjhotels.com";
+
+  function setHint(txt) {
+    if ($hint) $hint.textContent = txt || "";
+  }
+
+  btnEmail.addEventListener("click", () => {
+    const subject = encodeURIComponent("Soporte TJ Hotels");
+    const body = encodeURIComponent("Hola, necesito ayuda con...");
+    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+  });
+
+  btnClear.addEventListener("click", () => {
+    if ($name) $name.value = "";
+    if ($email) $email.value = "";
+    if ($topic) $topic.value = "General";
+    if ($msg) $msg.value = "";
+    setHint("");
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const name = ($name?.value || "").trim();
+    const email = ($email?.value || "").trim();
+    const topic = ($topic?.value || "General").trim();
+    const msg = ($msg?.value || "").trim();
+
+    if (name.length < 2) {
+      setHint("Escribe tu nombre (mínimo 2 caracteres).");
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setHint("Escribe un email válido.");
+      return;
+    }
+
+    if (msg.length < 10) {
+      setHint("Describe tu mensaje (mínimo 10 caracteres).");
+      return;
+    }
+
+    setHint("");
+
+    const item = {
+      id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      createdAt: new Date().toISOString(),
+      name,
+      email,
+      topic,
+      msg,
+      view: currentView,
+    };
+
+    const key = "tj_support_tickets";
+    const prev = JSON.parse(localStorage.getItem(key) || "[]");
+    prev.unshift(item);
+    localStorage.setItem(key, JSON.stringify(prev));
+
+    showSupportToast("✅ Mensaje enviado. Gracias, te contactaremos pronto.");
+
+    if ($msg) $msg.value = "";
+  });
+}
+
+/* Re-bind cuando cambias de vista */
+const _oldSetActiveView = setActiveView;
+setActiveView = function (view) {
+  _oldSetActiveView(view);
+  if (view === "soporte") bindSupportEventsIfPossible();
+};
