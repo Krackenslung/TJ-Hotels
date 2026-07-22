@@ -1,28 +1,33 @@
-import os
 import pyodbc
-from dotenv import load_dotenv
+import config
 
-#Read env data
-load_dotenv()
+
+# Raised when the DB is unreachable or misconfigured — callers get a clear
+# error instead of the old behavior of returning None and crashing later.
+class DatabaseConnectionError(Exception):
+    pass
+
 
 class SQLServerConnection:
     @staticmethod
     def get_connection():
-        # Read enviroment variables
-        server = os.getenv("SQL_SERVER")
-        database = os.getenv("SQL_DATABASE")
-        user = os.getenv("SQL_USER")
-        password = os.getenv("SQL_PASSWORD")
+        # Read configuration (config.py loads .env once)
+        server = config.SQL_SERVER
+        database = config.SQL_DATABASE
+        user = config.SQL_USER
+        password = config.SQL_PASSWORD
         #check parameters
-        if not server:
-            print("Configuration error: SQL_SERVER not found in .ENV File.")
-        if not database:
-            print("Configuration error: SQL_DATABASE not found in .ENV File.")
-        if not user:
-            print("Configuration error: SQL_USER not found in .ENV File.")
-        if not password:
-            print("Configuration error: SQL_PASSWORD not found in .ENV File.")
-        # Connection string 
+        missing = [name for name, value in (
+            ("SQL_SERVER", server),
+            ("SQL_DATABASE", database),
+            ("SQL_USER", user),
+            ("SQL_PASSWORD", password),
+        ) if not value]
+        if missing:
+            raise DatabaseConnectionError(
+                f"Configuration error: {', '.join(missing)} not found in .ENV File."
+            )
+        # Connection string
         connectionString = (
             "DRIVER={ODBC Driver 18 for SQL Server};"
             f"SERVER={server};"
@@ -33,17 +38,17 @@ class SQLServerConnection:
             "TrustServerCertificate=yes;"
         )
 
-        try: 
-            # Try connection 
+        try:
+            # Try connection
             connection = pyodbc.connect(connectionString)
             # set utf-8 encoding/decoding
             connection.setencoding(encoding='utf-8')
             connection.setdecoding(pyodbc.SQL_CHAR, encoding='utf-8')
             connection.setdecoding(pyodbc.SQL_WCHAR, encoding='utf-8')
         except Exception as ex:
-            print("Could not connect to SQL Server")
-            print(str(ex))
-            return None
+            raise DatabaseConnectionError(
+                "Could not connect to SQL Server: " + str(ex)
+            )
 
         # return
         return connection

@@ -4,14 +4,18 @@ import datetime
 from functools import wraps
 from flask import request, jsonify
 
-# Key
-SECRET_KEY = '9876543210'
+import config
 
-# Generate JWT Token
+# Key (from .env — never hardcode secrets; fail fast if missing)
+SECRET_KEY = config.JWT_SECRET
+if not SECRET_KEY:
+    raise RuntimeError("Configuration error: JWT_SECRET not found in .ENV File.")
+
+# Generate JWT Token (lifetime shared with the auth cookie via config)
 def generate_token(user_id):
     payload = {
         'user_id': user_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=2),
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=config.TOKEN_HOURS),
         'iat': datetime.datetime.utcnow(),
     }
     return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
