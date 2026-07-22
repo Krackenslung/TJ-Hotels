@@ -105,7 +105,7 @@ class User:
         except Exception as e:
             raise e
 
-    # Parse to JSON
+    # Parse to JSON (never expose the password hash to clients)
     def to_json(self):
         return json.dumps({
             'id': self._id,
@@ -113,7 +113,6 @@ class User:
             'lastname': self._lastname,
             'dateOfBirth': str(self._dateOfBirth),
             'username': self._username,
-            'password': self._password,
             'phone': self._phone,
             'status': self._status
         })

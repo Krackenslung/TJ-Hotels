@@ -3,6 +3,8 @@ import json
 from models.User import User, RecordNotFoundError
 from models.Location import Location
 from security.auth import generate_token, require_auth
+from utils import ok, fail, handle_errors
+import config
 
 # Export to server
 user_bp = Blueprint('user_bp', __name__)
@@ -10,103 +12,77 @@ user_bp = Blueprint('user_bp', __name__)
 # ===== Get ALL (/users) =====
 @user_bp.route('/users', methods=['GET'])
 @require_auth
+@handle_errors
 def get_users():
-    try:
-        return jsonify({
-            "status": 0,
-            "data": [json.loads(u.to_json()) for u in User.get_all()]
-        })
-    except Exception as e:
-        return jsonify({
-            "status": 1,
-            "errorMessage": str(e)
-        })
+    return ok([json.loads(u.to_json()) for u in User.get_all()])
 
 # ===== GET /users/id =====
 @user_bp.route('/users/<int:user_id>', methods=['GET'])
 @require_auth
+@handle_errors
 def get_user_by_id(user_id):
-    try:
-        u = User([user_id])  # loads user
-        locations = Location.get_by_user_id(user_id)
+    u = User([user_id])  # loads user
+    locations = Location.get_by_user_id(user_id)
 
-        return jsonify({
-            "status": 0,
-            "data": {
-                "user": json.loads(u.to_json()),
-                "locations": locations
-            }
-        })
-    except RecordNotFoundError as e:
-        return jsonify({
-            "status": 1,
-            "errorMessage": str(e)
-        }), 404
-    except Exception as e:
-        return jsonify({
-            "status": 1,
-            "errorMessage": str(e)
-        }), 500
+    return ok({
+        "user": json.loads(u.to_json()),
+        "locations": locations
+    })
+
+# ===== GET /me =====
+# Current session user, resolved from the httpOnly auth_token cookie.
+# The frontend hydrates its session from here instead of trusting
+# sessionStorage (which is client-forgeable and can drift).
+@user_bp.route('/me', methods=['GET'])
+@require_auth
+@handle_errors
+def me():
+    u = User([request.user_id])
+    return ok(json.loads(u.to_json()))
 
 # ===== Post /users =====
 @user_bp.route('/users', methods=['POST'])
+@handle_errors
 def add():
-    try:
-        data = request.get_json()
-        u = User([])
-        u.name = data.get('name')
-        u.lastname = data.get('lastname')
-        u.dateOfBirth = data.get('dateOfBirth')
-        u.username = data.get('username')
-        u.password = data.get('password')
-        u.phone = data.get('phone')
-        u.status = data.get('status', 1)
-        u.add()
-        return jsonify({
-            "status": 0,
-            "message": "User added successfully"
-        })
-    except Exception as e:
-        return jsonify({
-            "status": 1,
-            "errorMessage": str(e)
-        })
+    data = request.get_json()
+    u = User([])
+    u.name = data.get('name')
+    u.lastname = data.get('lastname')
+    u.dateOfBirth = data.get('dateOfBirth')
+    u.username = data.get('username')
+    u.password = data.get('password')
+    u.phone = data.get('phone')
+    u.status = data.get('status', 1)
+    u.add()
+    return ok(message="User added successfully")
 
-# Login / Post 
+# Login / Post
 @user_bp.route('/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
         if not data or "username" not in data or "password" not in data:
-            return jsonify({
-                "status": 1,
-                "errorMessage": "Username and password are required."
-            }), 400
+            return fail("Username and password are required.", 400)
         u = User.get_by_username(data["username"])
         if not u or not u.check_password(data["password"]):
-            return jsonify({
-                "status": 1,
-                "errorMessage": "Invalid credentials."
-            }), 401
+            return fail("Invalid credentials.", 401)
         token = generate_token(u.id)
         response = make_response(jsonify({
             "status": 0,
             "user": json.loads(u.to_json())
         }))
+        # Cookie lifetime == token lifetime (both from config)
         response.set_cookie(
             "auth_token",
             token,
             httponly=True,
             secure=True,
             samesite="Strict",
-            max_age=60 * 60 * 10
+            max_age=config.TOKEN_MAX_AGE_SECONDS
         )
         return response
     except Exception as ex:
-        return jsonify({
-            "status": 2,
-            "errorMessage": str(ex)
-        }), 400
+        return fail(str(ex), 400, status=2)
 
 # ===== Logout =====
 @user_bp.route("/logout", methods=["POST"])
@@ -124,12 +100,12 @@ def logout():
 #     #get data
 #     data = request.get_json()
 #     if not data or 'username' not in data or 'password' not in data:
-#         # display 
+#         # display
 #         return jsonify({
 #             "status": 1,
 #             "errorMessage": "Username and password are required."
 #         }), 400
-    
+
 #     username = data.get('username')
 #     password = data.get('password')
 

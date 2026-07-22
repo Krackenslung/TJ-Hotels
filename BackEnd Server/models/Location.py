@@ -84,7 +84,9 @@ class Location:
 
     # ===== Methods ======
     # Load location by id
-    def __load_by_id(self, id):
+    # (was name-mangled as __load_by_id, which broke Location([id]) — the
+    # constructor calls self._load_by_id)
+    def _load_by_id(self, id):
         try:
             with SQLServerConnection.get_connection() as conn:
                 #cursor
@@ -94,7 +96,7 @@ class Location:
                 if row:
                     self._id, self._name, self._description, self._address, self._lat, self._lng, self._userId, self._status = row
                 else:
-                    raise RecordNotFoundException(f"Task with ID {id} not found.")
+                    raise RecordNotFoundException(f"Location with ID {id} not found.")
         except Exception as ex:
             raise ex
         
